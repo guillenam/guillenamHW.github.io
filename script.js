@@ -99,16 +99,23 @@ measureBtn.addEventListener('click', () => {
     bpmText.innerText = "--";
     measureBtn.disabled = true;
     measureBtn.innerText = "Measuring...";
-    heartIcon.classList.add('beating'); // Activar animación CSS
+    heartIcon.classList.add('beating'); // Activar animación
 
     // Simular tiempo de medición (3 segundos)
     setTimeout(() => {
-        // Generar número aleatorio entre 60 y 100
+        // 1. Generar número aleatorio
         const randomBPM = Math.floor(Math.random() * (100 - 60 + 1) + 60);
         
+        // 2. Actualizar la pantalla de la App Corazón
         bpmText.innerText = randomBPM;
+        
+        // 3. NUEVO: Actualizar la pantalla principal (Home)
+        // Buscamos el elemento por el ID que acabamos de crear y le inyectamos el HTML
+        document.getElementById('home-bpm').innerHTML = `<i class="bi bi-heart-fill text-danger"></i> ${randomBPM} bpm`;
+
+        // 4. Restaurar botones
         measureBtn.disabled = false;
         measureBtn.innerText = "Measure Again";
-        heartIcon.classList.remove('beating'); // Parar animación
+        heartIcon.classList.remove('beating'); 
     }, 3000);
 });
