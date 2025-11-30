@@ -1,121 +1,83 @@
-/* SMART WATCH LOGIC */
+/* ECOPOWER PLANT LOGIC */
 
-// --- 1. RELOJ EN TIEMPO REAL ---
-function updateClock() {
-    const now = new Date();
+// 1. Elementos del DOM
+const sunSlider = document.getElementById('sun-slider');
+const sunVal = document.getElementById('sun-val');
+const sunElement = document.getElementById('sun');
+const solarKw = document.getElementById('solar-kw');
+
+const windSlider = document.getElementById('wind-slider');
+const windVal = document.getElementById('wind-val');
+const turbineElement = document.getElementById('turbine');
+const windKw = document.getElementById('wind-kw');
+
+const totalKw = document.getElementById('total-kw');
+const energyBar = document.getElementById('energy-bar');
+const statusMsg = document.getElementById('status-msg');
+
+// 2. Factores de conversión (Matemáticas simples)
+const SOLAR_FACTOR = 0.5; // 1% de sol = 0.5 kW
+const WIND_FACTOR = 0.8;  // 1 km/h viento = 0.8 kW
+
+// 3. Función Principal
+function calculateEnergy() {
+    // Leer valores
+    let sunInput = parseInt(sunSlider.value);
+    let windInput = parseInt(windSlider.value);
+
+    // Actualizar textos de los sliders
+    sunVal.innerText = sunInput;
+    windVal.innerText = windInput;
+
+    // --- LÓGICA SOLAR ---
+    let solarProd = (sunInput * SOLAR_FACTOR).toFixed(1);
+    solarKw.innerText = solarProd;
     
-    // Formato HH:MM:SS
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    
-    // Formato Fecha
-    const options = { weekday: 'short', day: 'numeric', month: 'short' };
-    const dateString = now.toLocaleDateString('en-US', options);
+    // Animación visual del sol (Opacidad y Sombra)
+    sunElement.style.opacity = 0.3 + (sunInput / 150); 
+    sunElement.style.boxShadow = `0 0 ${sunInput / 2}px #fdd835`;
 
-    // Actualizar DOM
-    document.getElementById('main-time').innerText = `${hours}:${minutes}:${seconds}`;
-    document.getElementById('small-time').innerText = `${hours}:${minutes}`;
-    document.getElementById('date-display').innerText = dateString;
-}
+    // --- LÓGICA EÓLICA ---
+    let windProd = (windInput * WIND_FACTOR).toFixed(1);
+    windKw.innerText = windProd;
 
-// Actualizar cada segundo
-setInterval(updateClock, 1000);
-updateClock(); // Llamada inicial
-
-
-// --- 2. SISTEMA DE NAVEGACIÓN (APPS) ---
-function openApp(appId) {
-    // 1. Ocultar todas las apps
-    document.querySelectorAll('.app').forEach(app => {
-        app.classList.remove('active');
-    });
-    
-    // 2. Mostrar la seleccionada
-    document.getElementById(appId).classList.add('active');
-
-    // 3. Actualizar iconos del dock (Visual)
-    // Esto es un truco simple para resaltar el icono activo
-    /* En un proyecto real haríamos un loop para las clases active del dock */
-}
-
-// Botón físico "Home" (Vuelve al reloj)
-document.getElementById('home-btn').addEventListener('click', () => {
-    openApp('app-clock');
-});
-
-
-// --- 3. LÓGICA DEL CRONÓMETRO ---
-let stopwatchInterval;
-let elapsedSeconds = 0;
-let isRunning = false;
-
-const display = document.getElementById('stopwatch-time');
-const startBtn = document.getElementById('start-stop-btn');
-
-startBtn.addEventListener('click', () => {
-    if (!isRunning) {
-        // INICIAR
-        isRunning = true;
-        startBtn.innerHTML = '<i class="bi bi-pause-fill"></i>';
-        startBtn.classList.remove('start');
-        startBtn.classList.add('stop');
+    // Animación visual del molino (Velocidad de giro)
+    if (windInput > 0) {
+        // Cuanto más viento, menos tiempo dura una vuelta (gira más rápido)
+        // Fórmula: 3s (lento) -> 0.2s (rápido)
+        let speed = 3 - (windInput / 35); 
+        if (speed < 0.2) speed = 0.2; // Límite de velocidad
         
-        stopwatchInterval = setInterval(() => {
-            elapsedSeconds++;
-            // Formatear a HH:MM:SS
-            const h = String(Math.floor(elapsedSeconds / 3600)).padStart(2, '0');
-            const m = String(Math.floor((elapsedSeconds % 3600) / 60)).padStart(2, '0');
-            const s = String(elapsedSeconds % 60).padStart(2, '0');
-            display.innerText = `${h}:${m}:${s}`;
-        }, 1000);
+        turbineElement.style.animation = `spin ${speed}s linear infinite`;
     } else {
-        // PAUSAR
-        isRunning = false;
-        clearInterval(stopwatchInterval);
-        startBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
-        startBtn.classList.remove('stop');
-        startBtn.classList.add('start');
+        turbineElement.style.animation = 'none'; // Parar si es 0
     }
-});
 
-document.getElementById('reset-btn').addEventListener('click', () => {
-    isRunning = false;
-    clearInterval(stopwatchInterval);
-    elapsedSeconds = 0;
-    display.innerText = "00:00:00";
-    startBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
-    startBtn.classList.remove('stop');
-    startBtn.classList.add('start');
-});
+    // --- TOTALES ---
+    let total = parseFloat(solarProd) + parseFloat(windProd);
+    totalKw.innerText = total.toFixed(1);
 
+    // Barra de progreso (Máximo estimado 130 kW para el 100%)
+    let percentage = (total / 130) * 100;
+    if (percentage > 100) percentage = 100;
+    energyBar.style.width = `${percentage}%`;
 
-// --- 4. SIMULADOR DE RITMO CARDÍACO ---
-const heartIcon = document.getElementById('heart-icon');
-const bpmText = document.getElementById('bpm-val');
-const measureBtn = document.getElementById('measure-btn');
+    // Mensajes de estado
+    if (total === 0) {
+        statusMsg.innerText = "System Offline";
+        statusMsg.style.color = "#777";
+    } else if (total < 50) {
+        statusMsg.innerText = "Low Production";
+        statusMsg.style.color = "#e67e22";
+    } else {
+        statusMsg.innerText = "High Efficiency - Grid Active";
+        statusMsg.style.color = "#27ae60";
+    }
+}
 
-measureBtn.addEventListener('click', () => {
-    bpmText.innerText = "--";
-    measureBtn.disabled = true;
-    measureBtn.innerText = "Measuring...";
-    heartIcon.classList.add('beating'); // Activar animación
+// 4. Event Listeners (Escuchar cambios)
+sunSlider.addEventListener('input', calculateEnergy);
+windSlider.addEventListener('input', calculateEnergy);
 
-    // Simular tiempo de medición (3 segundos)
-    setTimeout(() => {
-        // 1. Generar número aleatorio
-        const randomBPM = Math.floor(Math.random() * (100 - 60 + 1) + 60);
-        
-        // 2. Actualizar la pantalla de la App Corazón
-        bpmText.innerText = randomBPM;
-        
-        // 3. NUEVO: Actualizar la pantalla principal (Home)
-        // Buscamos el elemento por el ID que acabamos de crear y le inyectamos el HTML
-        document.getElementById('home-bpm').innerHTML = `<i class="bi bi-heart-fill text-danger"></i> ${randomBPM} bpm`;
-
-        // 4. Restaurar botones
-        measureBtn.disabled = false;
-        measureBtn.innerText = "Measure Again";
-        heartIcon.classList.remove('beating'); 
-    }, 3000);
-});
+// Iniciar al cargar
+calculateEnergy();
