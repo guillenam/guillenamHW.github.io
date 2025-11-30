@@ -3,64 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Watch UI</title>
+    <title>EcoPower Plant Simulator</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div class="watch-case">
-        <div class="side-button" id="home-btn" title="Home Button"></div>
+    <div class="dashboard">
+        <header>
+            <h1>🌱 EcoPower Control</h1>
+            <p>Renewable Energy Simulator</p>
+        </header>
 
-        <div class="screen">
+        <div class="grid-container">
             
-            <div class="status-bar">
-                <span id="small-time">12:00</span>
-                <span><i class="bi bi-battery-half"></i> 64%</span>
-            </div>
-
-            <div id="app-clock" class="app active">
-                <div class="clock-face">
-                    <h1 id="main-time">12:00:00</h1>
-                    <p id="date-display">Mon, 12 Oct</p>
+            <div class="card solar">
+                <h2>☀️ Solar Panel</h2>
+                <div class="visual-box">
+                    <div id="sun" class="sun-shape"></div>
                 </div>
-                <div class="health-preview">
-                    <span><i class="bi bi-fire text-danger"></i> 340 kcal</span>
-                    <span id="home-bpm"><i class="bi bi-heart-fill text-danger"></i> -- bpm</span>
-                </div>
-            </div>
-
-            <div id="app-stopwatch" class="app">
-                <h2>Stopwatch</h2>
-                <div class="stopwatch-display" id="stopwatch-time">00:00:00</div>
                 <div class="controls">
-                    <button id="start-stop-btn" class="btn-circle start"><i class="bi bi-play-fill"></i></button>
-                    <button id="reset-btn" class="btn-circle reset"><i class="bi bi-arrow-counterclockwise"></i></button>
+                    <label>Sun Intensity: <span id="sun-val">0</span>%</label>
+                    <input type="range" id="sun-slider" min="0" max="100" value="0">
                 </div>
+                <p class="output-text">Generating: <span id="solar-kw">0</span> kW</p>
             </div>
 
-            <div id="app-heart" class="app">
-                <h2>Heart Rate</h2>
-                <div class="heart-animation">
-                    <i class="bi bi-heart-fill" id="heart-icon"></i>
+            <div class="card wind">
+                <h2>💨 Wind Turbine</h2>
+                <div class="visual-box">
+                    <div id="turbine" class="turbine-shape">
+                        <div class="blade"></div>
+                        <div class="blade"></div>
+                        <div class="blade"></div>
+                    </div>
+                    <div class="pole"></div>
                 </div>
-                <div class="bpm-display">
-                    <span id="bpm-val">--</span> <small>BPM</small>
+                <div class="controls">
+                    <label>Wind Speed: <span id="wind-val">0</span> km/h</label>
+                    <input type="range" id="wind-slider" min="0" max="100" value="0">
                 </div>
-                <button id="measure-btn" class="btn-pill">Measure</button>
+                <p class="output-text">Generating: <span id="wind-kw">0</span> kW</p>
             </div>
 
-            <div class="dock">
-                <button onclick="openApp('app-clock')" class="dock-btn active"><i class="bi bi-clock"></i></button>
-                <button onclick="openApp('app-stopwatch')" class="dock-btn"><i class="bi bi-stopwatch"></i></button>
-                <button onclick="openApp('app-heart')" class="dock-btn"><i class="bi bi-heart-pulse"></i></button>
+            <div class="card total">
+                <h2>⚡ Total Production</h2>
+                <div class="total-display">
+                    <span id="total-kw">0</span> <small>kW</small>
+                </div>
+                
+                <div class="energy-bar-container">
+                    <div id="energy-bar" class="energy-bar"></div>
+                </div>
+                <p id="status-msg">System Idle</p>
             </div>
 
         </div>
+
+        <footer>
+            <a href="../index.html" class="back-link">← Back to Resume</a>
+        </footer>
     </div>
 
     <script src="script.js"></script>
 </body>
-
 </html>
+
